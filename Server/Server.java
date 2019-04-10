@@ -19,13 +19,16 @@ public class Server {
     boolean validPort = false;
     int p1Score = 0;
     int p2Score = 0;
+    int p3Score = 0;
     String p1Move;
     String p2Move;
+    String p3Move;
     Consumer<Serializable> callback;
     boolean gameOver = false;
     String winner;
     int numPlayers = 0;
-    int maxPlayers = 4;
+    int maxPlayers = 3;
+    int clientIDs = 1;
 
     public Server(Consumer<Serializable> callback) {
         this.callback = callback;
@@ -64,6 +67,8 @@ public class Server {
         //creates four players
         for (int i=0; i < maxPlayers; i++) {
             Connection newClient = new Connection();
+            newClient.playerID = clientIDs;
+            clientIDs++;
             newClient.start();
             connectionList.add(newClient);
         }
@@ -108,6 +113,7 @@ public class Server {
         String ClientMove;
         boolean madeMove = false;
         int playerScore = 0;
+        int playerID;
 
         public void run() {
             try {
@@ -322,22 +328,17 @@ public class Server {
     //send the new scores out to the 2 clients
     private synchronized void updateClients() {
         try {
-            if (connectionList.get(0) != null) {
-                //check if the connection has been closed
-                if (connectionList.get(0).s != null) {
-                    connectionList.get(0).output.writeObject(p1Score);
-                    connectionList.get(0).output.writeObject(p2Score);
-                    connectionList.get(0).output.writeObject(numPlayers);
-                    connectionList.get(0).output.writeObject(p2Move);
-                }
-            }
-            if (connectionList.get(1) != null) {
-                //check if the connection has been closed
-                if (connectionList.get(1).s != null) {
-                    connectionList.get(1).output.writeObject(p2Score);
-                    connectionList.get(1).output.writeObject(p1Score);
-                    connectionList.get(1).output.writeObject(numPlayers);
-                    connectionList.get(1).output.writeObject(p1Move);
+            for (Connection conn: connectionList) {
+                if (conn != null) {
+                    if (conn.s != null) {
+                        conn.output.writeObject(p1Score);
+                        conn.output.writeObject(p2Score);
+                        conn.output.writeObject(p3Score);
+                        conn.output.writeObject(numPlayers);
+                        conn.output.writeObject(p1Move);
+                        conn.output.writeObject(p2Move);
+                        conn.output.writeObject(p3Move);
+                    }
                 }
             }
         }

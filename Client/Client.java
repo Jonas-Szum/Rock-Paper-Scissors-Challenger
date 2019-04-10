@@ -17,10 +17,12 @@ public class Client {
     private boolean validSettings = false;
     private Consumer<Serializable> callback;
     boolean connected = false;
-    int myScore, theirScore;
-    boolean gameOver = false;
+    int p1Score, p2Score, p3Score;
     int numPlayers = 0;
-    String theirMove;
+    int myPlayerID;
+    String p1Move, p2Move, p3Move;
+
+    boolean isPlayingGame = false;
 
     //default constructor
     public Client(Consumer<Serializable> callback) {
@@ -103,16 +105,27 @@ public class Client {
                 //take in input
                 while(connected) {
                     Serializable firstScore = (Serializable) input.readObject();
-                    myScore = (Integer) firstScore;
+                    p1Score = (Integer) firstScore;
 
                     Serializable secScore = (Serializable) input.readObject();
-                    theirScore = (Integer) secScore;
+                    p2Score = (Integer) secScore;
+
+                    Serializable thirdScore = (Serializable) input.readObject();
+                    p3Score = (Integer) thirdScore;
 
                     Serializable amIAlone = (Serializable) input.readObject();
                     numPlayers = (Integer) amIAlone;
 
-                    Serializable notMyMove = (Serializable) input.readObject();
-                    theirMove = (String) notMyMove;
+                    Serializable p1 = (Serializable) input.readObject();
+                    p1Move = (String) p1;
+
+                    Serializable p2 = (Serializable) input.readObject();
+                    p2Move = (String) p2;
+
+                    Serializable p3 = (Serializable) input.readObject();
+                    p3Move = (String) p3;
+
+
 
                     callback.accept("Changes made");
                 }
