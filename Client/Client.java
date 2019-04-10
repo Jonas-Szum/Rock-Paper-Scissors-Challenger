@@ -13,7 +13,7 @@ public class Client {
 
     private int port;
     private InetAddress IP;
-    sample.Client.Connection connection = new sample.Client.Connection();
+    Connection connection = new Connection();
     private boolean validSettings = false;
     private Consumer<Serializable> callback;
     boolean connected = false;
