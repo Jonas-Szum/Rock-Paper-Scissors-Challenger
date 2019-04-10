@@ -29,7 +29,7 @@ import java.net.InetAddress;
 
 public class Main extends Application {
 
-    private Stage welcomeStage, playStage;
+    private Stage welcomeStage, playStage, challengeStage;
     private Text welcomeText, portInputText, ipInputText;
     private Button systemsButton, playButton, closeButton;
     private Button Rock, Paper, Scissors, Lizard, Spock;
@@ -111,6 +111,23 @@ public class Main extends Application {
         playPane.setCenter(moves);
         playAgainButton.setVisible(false);
 
+        //////////////////          challenge page            ///////////////////
+        challengeStage = new Stage();
+        challengeStage.setTitle("Choose your challenger");
+        BorderPane challengePane = new BorderPane();
+        Scene challengeScene = new Scene(challengePane,400,600);
+
+        Button challengeOne = new Button("Challenge P1");
+        Button challengeTwo = new Button("Challenge P2");
+        Button challengeThree = new Button("Challenge P3");
+        Button challengeFour = new Button("Challenge P4");
+
+        VBox challenger = new VBox(challengeOne, challengeTwo,challengeThree,challengeFour);
+        challenger.setSpacing(20);
+        challenger.setAlignment(Pos.CENTER);
+
+        challengePane.setCenter(challenger);
+
         //sets the buttons for the client
         systemsButton.setOnAction(event -> {
             try {
@@ -140,7 +157,7 @@ public class Main extends Application {
                     thisClient.connected = true;
                     selfScore = 0;
                     theirScore = 0;
-                    primaryStage.setScene(playScene);
+                    primaryStage.setScene(challengeScene);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -158,6 +175,22 @@ public class Main extends Application {
                 e.printStackTrace();
                 System.out.println("Issue with closing the connection of the client.");
             }
+        });
+
+        challengeOne.setOnAction(e ->{
+            primaryStage.setScene(playScene);
+        });
+
+        challengeTwo.setOnAction(e ->{
+            primaryStage.setScene(playScene);
+        });
+
+        challengeThree.setOnAction(e ->{
+            primaryStage.setScene(playScene);
+        });
+
+        challengeFour.setOnAction(e ->{
+            primaryStage.setScene(playScene);
         });
 
         Rock.setOnAction(event -> {
