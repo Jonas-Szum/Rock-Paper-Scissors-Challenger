@@ -34,14 +34,21 @@ public class Main extends Application {
     private Button systemsButton, playButton, closeButton;
     private Button Rock, Paper, Scissors, Lizard, Spock;
     private TextField portRequest, ipRequest;
-    private Text selfScoreText, theirScoreText;
-    private int selfScore, theirScore;
+    //    private Text selfScoreText, theirScoreText;
+    private Text p1ScoreText, p2ScoreText, p3ScoreText;
+    private int p1Score = 0;
+    private int p2Score = 0;
+    private int p3Score = 0;
+    private Text gameState = new Text("");
     private int portNumber;
     private InetAddress ipNumber;
     private Text winner = new Text("Winner: ");
-    private Text lonePlayer = new Text("Other guy left. Close client.");
+    private Text lonePlayer = new Text("Someone has left. Close client.");
     private Button playAgainButton = new Button("Play again");
-    private Text theirMove = new Text("Their move: " );
+    //    private Text theirMove = new Text("Their move: " );
+    private Text p1Move = new Text("P1 Move:");
+    private Text p2Move = new Text("P2 Move:");
+    private Text p3Move = new Text("P3 Move:");
 
     private Image rock = new Image("sample/rock.jpeg",75,75,true, true);
     private Image paper = new Image("sample/paper.jpeg", 75, 75, true, true);
@@ -101,10 +108,12 @@ public class Main extends Application {
         Lizard.setGraphic(new ImageView(lizard));
         Spock.setGraphic(new ImageView(spock));
 
-        selfScoreText = new Text("My Points: " + selfScore);
-        theirScoreText = new Text("Their Points" + theirScore);
+        p1ScoreText = new Text("P1 Points: " + p1Score);
+        p2ScoreText = new Text("P2 Points:" + p2Score);
+        p3ScoreText = new Text("P3 Points:" + p3Score);
 
-        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, theirMove, selfScoreText,theirScoreText, winner, closeButton, playAgainButton);
+//        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, theirMove, selfScoreText,theirScoreText, winner, closeButton, playAgainButton);
+        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, p1ScoreText, p2ScoreText, p3ScoreText, winner, closeButton, playAgainButton);
         moves.setSpacing(10);
         moves.setAlignment(Pos.CENTER);
 
@@ -155,8 +164,6 @@ public class Main extends Application {
                 try {
                     thisClient.startConnection();
                     thisClient.connected = true;
-                    selfScore = 0;
-                    theirScore = 0;
                     primaryStage.setScene(challengeScene);
                 }
                 catch (Exception e) {
@@ -216,21 +223,22 @@ public class Main extends Application {
         playAgainButton.setOnAction(event -> {
             thisClient.sendInfo("Play");
 
-            thisClient.myScore = 0;
-            thisClient.theirScore = 0;
+//            thisClient.p1Score = 0;
+//            thisClient.theirScore = 0;
 
-            selfScore = 0;
-            theirScore = 0;
+//            selfScore = 0;
+//            theirScore = 0;
 
-            selfScoreText.setText("My Points: " + selfScore);
-            theirScoreText.setText("Their Points" + theirScore);
+            p1ScoreText.setText("P1 Points:" + p1Score);
+            p2ScoreText.setText("P2 Points:" + p2Score);
+            p3ScoreText.setText("P3 Points:" + p3Score);
+
+//            selfScoreText.setText("My Points: " + selfScore);
+//            theirScoreText.setText("Their Points" + theirScore);
             winner.setText("Winner: ");
 
             playAgainButton.setVisible(false);
         });
-
-        //for some reason, it is only updating oen of the clients
-
 
 
         primaryStage.show();
@@ -239,13 +247,30 @@ public class Main extends Application {
     private Client createClient() {
         return new Client(data -> {
             Platform.runLater(() -> {
-                selfScore = thisClient.myScore;
-                theirScore = thisClient.theirScore;
+//                selfScore = thisClient.myScore;
+//                theirScore = thisClient.theirScore;
+                p1Score = thisClient.p1Score;
+                p2Score = thisClient.p2Score;
+                p3Score = thisClient.p3Score;
 
-                selfScoreText.setText("My Points: " + selfScore);
-                theirScoreText.setText("Their Points" + theirScore);
+                gameState.setText(thisClient.returnThisString);
 
-                theirMove.setText("Their move: " + thisClient.theirMove);
+
+
+//                selfScoreText.setText("My Points: " + selfScore);
+//                theirScoreText.setText("Their Points" + theirScore);
+
+//                p1ScoreText.setText("P1 Points:" + p1Score);
+//                p2ScoreText.setText("P2 Points:" + p2Score);
+//                p3ScoreText.setText("P3 Points:" + p3Score);
+
+
+
+//                theirMove.setText("Their move: " + thisClient.theirMove);
+//                private Text p1Move = new Text("P1 Move:");
+//                p1Move.setText("P1 Move:" + thisClient.p1Move);
+//                p2Move.setText("P2 Move:" + thisClient.p2Move);
+//                p3Move.setText("P3 Move:" + thisClient.p3Move);
 
                 if (thisClient.numPlayers == -1) {
                     winner.setText("A player left. Please close client.");
@@ -253,14 +278,14 @@ public class Main extends Application {
 
                 }
 
-                if (selfScore == 3) {
-                    winner.setText("Winner: Me!!");
-                    playAgainButton.setVisible(true);
-                }
-                else if (theirScore == 3) {
-                    winner.setText("Winner: Other guy...");
-                    playAgainButton.setVisible(true);
-                }
+//                if (selfScore == 3) {
+//                    winner.setText("Winner: Me!!");
+//                    playAgainButton.setVisible(true);
+//                }
+//                else if (theirScore == 3) {
+//                    winner.setText("Winner: Other guy...");
+//                    playAgainButton.setVisible(true);
+//                }
             });
         });
     }

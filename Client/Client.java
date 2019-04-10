@@ -13,7 +13,7 @@ public class Client {
 
     private int port;
     private InetAddress IP;
-    Connection connection = new Connection();
+    sample.Client.Connection connection = new sample.Client.Connection();
     private boolean validSettings = false;
     private Consumer<Serializable> callback;
     boolean connected = false;
@@ -21,8 +21,7 @@ public class Client {
     int numPlayers = 0;
     int myPlayerID;
     String p1Move, p2Move, p3Move;
-
-    boolean isPlayingGame = false;
+    String returnThisString;
 
     //default constructor
     public Client(Consumer<Serializable> callback) {
@@ -104,27 +103,32 @@ public class Client {
 
                 //take in input
                 while(connected) {
-                    Serializable firstScore = (Serializable) input.readObject();
-                    p1Score = (Integer) firstScore;
+//                    Serializable firstScore = (Serializable) input.readObject();
+//                    p1Score = (Integer) firstScore;
+//
+//                    Serializable secScore = (Serializable) input.readObject();
+//                    p2Score = (Integer) secScore;
+//
+//                    Serializable thirdScore = (Serializable) input.readObject();
+//                    p3Score = (Integer) thirdScore;
+//
+//                    Serializable amIAlone = (Serializable) input.readObject();
+//                    numPlayers = (Integer) amIAlone;
+//
+//                    Serializable p1 = (Serializable) input.readObject();
+//                    p1Move = (String) p1;
+//
+//                    Serializable p2 = (Serializable) input.readObject();
+//                    p2Move = (String) p2;
+//
+//                    Serializable p3 = (Serializable) input.readObject();
+//                    p3Move = (String) p3;
 
-                    Serializable secScore = (Serializable) input.readObject();
-                    p2Score = (Integer) secScore;
-
-                    Serializable thirdScore = (Serializable) input.readObject();
-                    p3Score = (Integer) thirdScore;
+                    Serializable receivedString = (Serializable) input.readObject();
+                    returnThisString = (String) receivedString;
 
                     Serializable amIAlone = (Serializable) input.readObject();
                     numPlayers = (Integer) amIAlone;
-
-                    Serializable p1 = (Serializable) input.readObject();
-                    p1Move = (String) p1;
-
-                    Serializable p2 = (Serializable) input.readObject();
-                    p2Move = (String) p2;
-
-                    Serializable p3 = (Serializable) input.readObject();
-                    p3Move = (String) p3;
-
 
 
                     callback.accept("Changes made");
