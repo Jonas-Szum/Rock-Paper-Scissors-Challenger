@@ -158,7 +158,7 @@ public class Server {
 		numPlayers--; //new to this version
                 callback.accept("Not enough players to play.");
                 //BELOW NEEDS TO BE CHANGED
-		updateClients(-1, -1);
+		updateClients();
 
             } //end of catch
         } //end of run
@@ -337,7 +337,7 @@ public class Server {
     private synchronized void updateClients(int player1, int player2) {
         try {
 	    //sends updates to both players
-	    connectionList.get(player1).output.writeObject(playerScores.get(player1));
+	    /*connectionList.get(player1).output.writeObject(playerScores.get(player1));
 	    connectionList.get(player1).output.writeObject(playerScores.get(player2));
 	    connectionList.get(player1).output.writeObject(numPlayers);
 	    connectionList.get(player1).output.writeObject(playerMoves.get(player1));
@@ -348,9 +348,8 @@ public class Server {
             connectionList.get(player2).output.writeObject(numPlayers);
             connectionList.get(player2).output.writeObject(playerMoves.get(player1));
             connectionList.get(player2).output.writeObject(playerMoves.get(player2));
-
-	    //could also just send every update to everyone
-	    /*
+*/
+	    //could also just send every update to everyon
             for (Connection conn : connectionList) {
                 if (conn != null) {
                     if (conn.s != null) {
@@ -365,7 +364,7 @@ public class Server {
 			  conn.output.writeObject(move);
 			  }
                     }
-                }*/
+                }
             }
         }
         catch (Exception e) {
