@@ -17,12 +17,14 @@ public class Server {
     private ServerSocket server_socket;
     boolean active = false;
     boolean validPort = false;
-    int p1Score = 0;
-    int p2Score = 0;
-    int p3Score = 0;
-    String p1Move;
-    String p2Move;
-    String p3Move;
+    //int p1Score = 0;
+    //int p2Score = 0;
+    //int p3Score = 0;
+    volatile ArrayList<Integer> playerScores;	//new to this version
+    volatile ArrayList<String>  playerMoves;	//new to this version
+    //String p1Move;
+    //String p2Move;
+    //String p3Move;
     Consumer<Serializable> callback;
     boolean gameOver = false;
     String winner;
@@ -32,6 +34,13 @@ public class Server {
 
     public Server(Consumer<Serializable> callback) {
         this.callback = callback;
+	playerScores = new ArrayList<Integer>(); //can now handle any amount of players
+	playerMoves = new ArrayList<String>();
+        for(int i = 0; i < maxPlayers; i++)
+          {
+	  playerScores.add(0);
+	  playerMoves.add("");
+	  }
     }
 
     //store the active connections
@@ -114,7 +123,7 @@ public class Server {
         boolean madeMove = false;
         int playerScore = 0;
         int playerID;
-
+        int currentOpponent = -1;
         public void run() {
             try {
                 //get a socket from server.accept()
@@ -126,7 +135,7 @@ public class Server {
                     ObjectInputStream in = new ObjectInputStream(s.getInputStream());
                     this.output = out;
                     this.input = in;
-
+		    playerID = numPlayers; //starts at 0, goes up to numPlayers-1
                     numPlayers++;
                     callback.accept("Found connection");
 
@@ -136,7 +145,7 @@ public class Server {
                         this.madeMove = true;
 
 
-                        calculateRound();
+                        calculateRound(playerID, currentOpponent); //if you are not versing anyone, currentOpponent is -1, go to calculateRound to see why
                     }
                 } //end of if not null
 
@@ -145,110 +154,110 @@ public class Server {
                 System.out.println("A player has disappeared");
                 s = null;
 
-                numPlayers = -1; //holder for if we were to lose a player, then we are going to end game
+                //numPlayers = -1; //holder for if we were to lose a player, then we are going to end game
+		numPlayers--; //new to this version
                 callback.accept("Not enough players to play.");
-                updateClients();
+                //BELOW NEEDS TO BE CHANGED
+		updateClients(-1, -1);
 
             } //end of catch
         } //end of run
     } //end of connection method
 
     //calculates who won the round, and the game
-    private synchronized void calculateRound() {
-
-
-
-        if ((connectionList.get(0).playerScore != 3 && connectionList.get(1).playerScore != 3)
+    private synchronized void calculateRound(int player1, int player2) { //now takes the ID's of the two players, so it knows who to check
+        if (	player2 != -1 //if player2 is -1, then there is not a game currently going on, this if statement shorts out
+		&& (connectionList.get(player1).playerScore != 3 && connectionList.get(player2).playerScore != 3)
                 && numPlayers >1) {
                 //if anyone has not made a move yet, do nothing
-                if (!connectionList.get(0).madeMove || !connectionList.get(1).madeMove) {
+                if (!connectionList.get(player1).madeMove || !connectionList.get(player2).madeMove) {
                     return;
                 }
-                else if (connectionList.get(0).ClientMove.equals("Rock")) {
-                    switch (connectionList.get(1).ClientMove) {
+                else if (connectionList.get(player1).ClientMove.equals("Rock")) {
+                    switch (connectionList.get(player2).ClientMove) {
                         case "Rock":
                             break;
                         case "Paper":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Scissors":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                         case "Lizard":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Spock":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                     }
                 }
-                else if (connectionList.get(0).ClientMove.equals("Paper")) {
-                    switch (connectionList.get(1).ClientMove) {
+                else if (connectionList.get(player1).ClientMove.equals("Paper")) {
+                    switch (connectionList.get(player2).ClientMove) {
                         case "Rock":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                         case "Paper":
                             break;
                         case "Scissors":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Lizard":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Spock":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                     }
                 }
-                else if (connectionList.get(0).ClientMove.equals("Scissors")) {
-                    switch (connectionList.get(1).ClientMove) {
+                else if (connectionList.get(player1).ClientMove.equals("Scissors")) {
+                    switch (connectionList.get(player2).ClientMove) {
                         case "Rock":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Paper":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                         case "Scissors":
                             break;
                         case "Lizard":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                         case "Spock":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                     }
                 }
-                else if (connectionList.get(0).ClientMove.equals("Lizard")) {
-                    switch (connectionList.get(1).ClientMove) {
+                else if (connectionList.get(player1).ClientMove.equals("Lizard")) {
+                    switch (connectionList.get(player2).ClientMove) {
                         case "Rock":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Paper":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                         case "Scissors":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Lizard":
                             break;
                         case "Spock":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                     }
                 }
-                else if (connectionList.get(0).ClientMove.equals("Spock")) {
-                    switch (connectionList.get(1).ClientMove) {
+                else if (connectionList.get(player1).ClientMove.equals("Spock")) {
+                    switch (connectionList.get(player2).ClientMove) {
                         case "Rock":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                         case "Paper":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Scissors":
-                            connectionList.get(0).playerScore++;
+                            connectionList.get(player1).playerScore++;
                             break;
                         case "Lizard":
-                            connectionList.get(1).playerScore++;
+                            connectionList.get(player2).playerScore++;
                             break;
                         case "Spock":
                             break;
@@ -256,66 +265,65 @@ public class Server {
                 }
 
                 //reset so they need to make moves again
-                connectionList.get(0).madeMove = false;
-                connectionList.get(1).madeMove = false;
+                connectionList.get(player1).madeMove = false;
+                connectionList.get(player2).madeMove = false;
 
                 //update the client's version of the scores
-                p1Score = connectionList.get(0).playerScore;
-                p2Score = connectionList.get(1).playerScore;
-                p1Move = connectionList.get(0).ClientMove;
-                p2Move = connectionList.get(1).ClientMove;
+                p1Score = connectionList.get(player1).playerScore;
+                p2Score = connectionList.get(player2).playerScore;
+                p1Move = connectionList.get(player1).ClientMove;
+                p2Move = connectionList.get(player2).ClientMove;
 
                 callback.accept("Moves have been updated");
 
-                if (connectionList.get(0).playerScore == 3) {
-                    winner = "Player 1";
+                if (connectionList.get(player1).playerScore == 3) {
+                    winner = "Player " + String.valueOf(player1);
                     gameOver = true;
                 }
 
-                else if (connectionList.get(1).playerScore == 3) {
-                    winner = "Player 2";
+                else if (connectionList.get(player2).playerScore == 3) {
+                    winner = "Player " + String.valueOf(player2);
                     gameOver = true;
                 }
 
 
-                updateClients();
+                updateClients(player1, player2); //server knows which players to send data to this way
     } //end of checking if 6 case statement
 
-        else if (connectionList.get(0).playerScore == 3) {
-            if (connectionList.get(0).ClientMove.equals("Play")) {
-//                if (connectionList.get(1).ClientMove.equals("Play")) {
-                    connectionList.get(0).playerScore = 0;
-                    connectionList.get(1).playerScore = 0;
+        else if (connectionList.get(player1).playerScore == 3) {
+            if (connectionList.get(player1).ClientMove.equals("Play")) {
+                    connectionList.get(player1).playerScore = 0;
+                    connectionList.get(player2).playerScore = 0;
 
-                    connectionList.get(0).madeMove = false;
-                    connectionList.get(1).madeMove = false;
-
-                    p1Score = 0;
-                    p2Score = 0;
+                    connectionList.get(player1).madeMove = false;
+                    connectionList.get(player2).madeMove = false;
+		    playerScores.set(player1, 0);
+		    playerScores.set(player2, 0);
+                    ///p1Score = 0;
+                    //p2Score = 0;
                     winner = "Playing again";
                     callback.accept("replay");
-//                }
             }
             else {
                 System.out.println("Winner is already P1");
             }
         }
 
-        else if (connectionList.get(1).playerScore == 3) {
-            if (connectionList.get(1).ClientMove.equals("Play")) {
-//                if (connectionList.get(0).ClientMove.equals("Play")) {
-                    connectionList.get(0).playerScore = 0;
-                    connectionList.get(1).playerScore = 0;
+        else if (connectionList.get(player2).playerScore == 3) {
+            if (connectionList.get(player2).ClientMove.equals("Play")) {
+                    connectionList.get(player1).playerScore = 0;
+                    connectionList.get(player2).playerScore = 0;
 
-                    connectionList.get(0).madeMove = false;
-                    connectionList.get(1).madeMove = false;
+                    connectionList.get(player1).madeMove = false;
+                    connectionList.get(player2).madeMove = false;
 
-                    p1Score = 0;
-                    p2Score = 0;
+		    playerScores.set(player1, 0);
+		    playerScores.set(player2, 0);
+                    //p1Score = 0;
+                    //p2Score = 0;
 
                     winner = "Playing again";
                     callback.accept("replay");
-//                }
             }
             else {
                 System.out.println("Winner is already P2");
@@ -326,20 +334,38 @@ public class Server {
 
 
     //send the new scores out to the 2 clients
-    private synchronized void updateClients() {
+    private synchronized void updateClients(int player1, int player2) {
         try {
-            for (Connection conn: connectionList) {
+	    //sends updates to both players
+	    connectionList.get(player1).output.writeObject(playerScores.get(player1));
+	    connectionList.get(player1).output.writeObject(playerScores.get(player2));
+	    connectionList.get(player1).output.writeObject(numPlayers);
+	    connectionList.get(player1).output.writeObject(playerMoves.get(player1));
+	    connectionList.get(player1).output.writeObject(playerMoves.get(player2));
+
+	    connectionList.get(player2).output.writeObject(playerScores.get(player1));
+            connectionList.get(player2).output.writeObject(playerScores.get(player2));
+            connectionList.get(player2).output.writeObject(numPlayers);
+            connectionList.get(player2).output.writeObject(playerMoves.get(player1));
+            connectionList.get(player2).output.writeObject(playerMoves.get(player2));
+
+	    //could also just send every update to everyone
+	    /*
+            for (Connection conn : connectionList) {
                 if (conn != null) {
                     if (conn.s != null) {
-                        conn.output.writeObject(p1Score);
-                        conn.output.writeObject(p2Score);
-                        conn.output.writeObject(p3Score);
-                        conn.output.writeObject(numPlayers);
-                        conn.output.writeObject(p1Move);
-                        conn.output.writeObject(p2Move);
-                        conn.output.writeObject(p3Move);
+			//new: update all scores, numPlayers, and moves
+			for(Integer score : playerScores)
+			  {
+		  	  conn.output.writeObject(score);
+			  }
+			conn.output.writeObject(numPlayers);
+			for(String move : playerMoves)
+			  {
+			  conn.output.writeObject(move);
+			  }
                     }
-                }
+                }*/
             }
         }
         catch (Exception e) {
