@@ -35,20 +35,16 @@ public class Main extends Application {
     private Button Rock, Paper, Scissors, Lizard, Spock;
     private TextField portRequest, ipRequest;
     //    private Text selfScoreText, theirScoreText;
-    private Text p1ScoreText, p2ScoreText, p3ScoreText;
-    private int p1Score = 0;
-    private int p2Score = 0;
-    private int p3Score = 0;
+    private TextField challengePlayer = new TextField("Input player ID and enter to challenge");
     private Text gameState = new Text("");
+    private Text currentPlayers = new Text("Current # Players:");
+    private Text myPlayerID = new Text("You are player:");
     private int portNumber;
     private InetAddress ipNumber;
     private Text winner = new Text("Winner: ");
     private Text lonePlayer = new Text("Someone has left. Close client.");
     private Button playAgainButton = new Button("Play again");
-    //    private Text theirMove = new Text("Their move: " );
-    private Text p1Move = new Text("P1 Move:");
-    private Text p2Move = new Text("P2 Move:");
-    private Text p3Move = new Text("P3 Move:");
+    private Text players = new Text("Num Players:");
 
     private Image rock = new Image("sample/rock.jpeg",75,75,true, true);
     private Image paper = new Image("sample/paper.jpeg", 75, 75, true, true);
@@ -108,12 +104,9 @@ public class Main extends Application {
         Lizard.setGraphic(new ImageView(lizard));
         Spock.setGraphic(new ImageView(spock));
 
-        p1ScoreText = new Text("P1 Points: " + p1Score);
-        p2ScoreText = new Text("P2 Points:" + p2Score);
-        p3ScoreText = new Text("P3 Points:" + p3Score);
 
 //        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, theirMove, selfScoreText,theirScoreText, winner, closeButton, playAgainButton);
-        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, p1ScoreText, p2ScoreText, p3ScoreText, winner, closeButton, playAgainButton);
+        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, gameState, winner, closeButton, playAgainButton);
         moves.setSpacing(10);
         moves.setAlignment(Pos.CENTER);
 
@@ -125,13 +118,9 @@ public class Main extends Application {
         challengeStage.setTitle("Choose your challenger");
         BorderPane challengePane = new BorderPane();
         Scene challengeScene = new Scene(challengePane,400,600);
+        challengePlayer.setMaxWidth(300);
 
-        Button challengeOne = new Button("Challenge P1");
-        Button challengeTwo = new Button("Challenge P2");
-        Button challengeThree = new Button("Challenge P3");
-        Button challengeFour = new Button("Challenge P4");
-
-        VBox challenger = new VBox(challengeOne, challengeTwo,challengeThree,challengeFour);
+        VBox challenger = new VBox(myPlayerID, currentPlayers, challengePlayer, closeButton);
         challenger.setSpacing(20);
         challenger.setAlignment(Pos.CENTER);
 
@@ -184,20 +173,17 @@ public class Main extends Application {
             }
         });
 
-        challengeOne.setOnAction(e ->{
-            primaryStage.setScene(playScene);
-        });
 
-        challengeTwo.setOnAction(e ->{
-            primaryStage.setScene(playScene);
-        });
+        challengePlayer.setOnAction(e -> {
+            try {
+                Integer i = Integer.parseInt(challengePlayer.getText());
+                thisClient.sendInfo(i);
+            }
+            catch (Exception a){
+                a.printStackTrace();
+                challengePlayer.setText("Needs to be a number");
+            }
 
-        challengeThree.setOnAction(e ->{
-            primaryStage.setScene(playScene);
-        });
-
-        challengeFour.setOnAction(e ->{
-            primaryStage.setScene(playScene);
         });
 
         Rock.setOnAction(event -> {
@@ -229,9 +215,6 @@ public class Main extends Application {
 //            selfScore = 0;
 //            theirScore = 0;
 
-            p1ScoreText.setText("P1 Points:" + p1Score);
-            p2ScoreText.setText("P2 Points:" + p2Score);
-            p3ScoreText.setText("P3 Points:" + p3Score);
 
 //            selfScoreText.setText("My Points: " + selfScore);
 //            theirScoreText.setText("Their Points" + theirScore);
@@ -247,35 +230,18 @@ public class Main extends Application {
     private Client createClient() {
         return new Client(data -> {
             Platform.runLater(() -> {
-//                selfScore = thisClient.myScore;
-//                theirScore = thisClient.theirScore;
-                p1Score = thisClient.p1Score;
-                p2Score = thisClient.p2Score;
-                p3Score = thisClient.p3Score;
 
+                //returns the whole string of players' scores and their moves
                 gameState.setText(thisClient.returnThisString);
 
+                //return the number of players
+                currentPlayers.setText("Current # Players:" + thisClient.numPlayers);
 
-
-//                selfScoreText.setText("My Points: " + selfScore);
-//                theirScoreText.setText("Their Points" + theirScore);
-
-//                p1ScoreText.setText("P1 Points:" + p1Score);
-//                p2ScoreText.setText("P2 Points:" + p2Score);
-//                p3ScoreText.setText("P3 Points:" + p3Score);
-
-
-
-//                theirMove.setText("Their move: " + thisClient.theirMove);
-//                private Text p1Move = new Text("P1 Move:");
-//                p1Move.setText("P1 Move:" + thisClient.p1Move);
-//                p2Move.setText("P2 Move:" + thisClient.p2Move);
-//                p3Move.setText("P3 Move:" + thisClient.p3Move);
+                //return your ID so you cannot challenge yourself
+                myPlayerID.setText("You are player: " + thisClient.myPlayerID);
 
                 if (thisClient.numPlayers == -1) {
                     winner.setText("A player left. Please close client.");
-
-
                 }
 
 //                if (selfScore == 3) {
