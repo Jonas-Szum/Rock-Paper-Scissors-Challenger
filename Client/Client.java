@@ -98,7 +98,7 @@ public class Client {
                 output = new ObjectOutputStream(s.getOutputStream());
                 input = new ObjectInputStream(s.getInputStream());
                 s.setTcpNoDelay(true);
-
+		//Serializable numPlayersSer = input.readObject();
                 System.out.println("New connection client created.");
 
                 //take in input
