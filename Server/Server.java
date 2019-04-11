@@ -135,6 +135,7 @@ public class Server {
                     ObjectInputStream in = new ObjectInputStream(s.getInputStream());
                     this.output = out;
                     this.input = in;
+		    updateClients();
 		    playerID = numPlayers; //starts at 0, goes up to numPlayers-1
                     numPlayers++;
                     callback.accept("Found connection");
@@ -353,16 +354,19 @@ public class Server {
             for (Connection conn : connectionList) {
                 if (conn != null) {
                     if (conn.s != null) {
+			String playerInformation = "Not yet Implemented";
 			//new: update all scores, numPlayers, and moves
-			for(Integer score : playerScores)
+			/*for(Integer score : playerScores)
 			  {
 		  	  conn.output.writeObject(score);
-			  }
+			  }*/
 			conn.output.writeObject(numPlayers);
+			conn.output.writeObject(playerInformation);
+			/*
 			for(String move : playerMoves)
 			  {
 			  conn.output.writeObject(move);
-			  }
+			  }*/
                     }
                 }
             }
