@@ -18,7 +18,7 @@ public class Client {
     private Consumer<Serializable> callback;
     boolean connected = false;
     int p1Score, p2Score, p3Score;
-    int numPlayers = 0;
+    int numPlayers;
     int myPlayerID;
     String p1Move, p2Move, p3Move;
     String returnThisString;
@@ -103,33 +103,15 @@ public class Client {
 
                 //take in input
                 while(connected) {
-//                    Serializable firstScore = (Serializable) input.readObject();
-//                    p1Score = (Integer) firstScore;
-//
-//                    Serializable secScore = (Serializable) input.readObject();
-//                    p2Score = (Integer) secScore;
-//
-//                    Serializable thirdScore = (Serializable) input.readObject();
-//                    p3Score = (Integer) thirdScore;
-//
-//                    Serializable amIAlone = (Serializable) input.readObject();
-//                    numPlayers = (Integer) amIAlone;
-//
-//                    Serializable p1 = (Serializable) input.readObject();
-//                    p1Move = (String) p1;
-//
-//                    Serializable p2 = (Serializable) input.readObject();
-//                    p2Move = (String) p2;
-//
-//                    Serializable p3 = (Serializable) input.readObject();
-//                    p3Move = (String) p3;
+                    //will receive current number of players
+                    //will receive a string full of all the information and will put into GUI
+                    //will change challenge buttons to text field that you can put in a number for to challenge that player
 
-                    Serializable receivedString = (Serializable) input.readObject();
-                    returnThisString = (String) receivedString;
+                    Serializable players = (Serializable) input.readObject();
+                    numPlayers = (Integer) players;
 
-                    Serializable amIAlone = (Serializable) input.readObject();
-                    numPlayers = (Integer) amIAlone;
-
+                    Serializable playerInfo = (Serializable) input.readObject();
+                    returnThisString = (String) playerInfo;
 
                     callback.accept("Changes made");
                 }
