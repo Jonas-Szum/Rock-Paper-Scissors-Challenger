@@ -287,7 +287,7 @@ public class Server {
                 }
 
 
-                updateClients(player1, player2); //server knows which players to send data to this way
+                updateClients(); //server knows which players to send data to this way
     } //end of checking if 6 case statement
 
         else if (connectionList.get(player1).playerScore == 3) {
@@ -334,7 +334,7 @@ public class Server {
 
 
     //send the new scores out to the 2 clients
-    private synchronized void updateClients(int player1, int player2) {
+    private synchronized void updateClients() {
         try {
 	    //sends updates to both players
 	    /*connectionList.get(player1).output.writeObject(playerScores.get(player1));
