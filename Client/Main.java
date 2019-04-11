@@ -209,16 +209,8 @@ public class Main extends Application {
         playAgainButton.setOnAction(event -> {
             thisClient.sendInfo("Play");
 
-//            thisClient.p1Score = 0;
-//            thisClient.theirScore = 0;
-
-//            selfScore = 0;
-//            theirScore = 0;
-
-
-//            selfScoreText.setText("My Points: " + selfScore);
-//            theirScoreText.setText("Their Points" + theirScore);
             winner.setText("Winner: ");
+            primaryStage.setScene(challengeScene);
 
             playAgainButton.setVisible(false);
         });
