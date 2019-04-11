@@ -104,11 +104,14 @@ public class Client {
                 //take in input
                 while(connected) {
                     //will receive current number of players
+                    //will receive own player iD
                     //will receive a string full of all the information and will put into GUI
-                    //will change challenge buttons to text field that you can put in a number for to challenge that player
 
                     Serializable players = (Serializable) input.readObject();
                     numPlayers = (Integer) players;
+
+                    Serializable myID = (Serializable) input.readObject();
+                    myPlayerID = (Integer) myID;
 
                     Serializable playerInfo = (Serializable) input.readObject();
                     returnThisString = (String) playerInfo;
