@@ -32,6 +32,9 @@ public class Server {
     int maxPlayers = 3;
     int clientIDs = 1;
 
+    //store the active connections
+    ArrayList<Connection> connectionList = new ArrayList<Connection>();
+
     public Server(Consumer<Serializable> callback) {
         this.callback = callback;
 	playerScores = new ArrayList<Integer>(); //can now handle any amount of players
@@ -43,8 +46,6 @@ public class Server {
 	  }
     }
 
-    //store the active connections
-    ArrayList<Connection> connectionList = new ArrayList<Connection>();
 
     //get the port of the server
     int getPort() {
@@ -124,6 +125,7 @@ public class Server {
         int playerScore = 0;
         int playerID;
         int currentOpponent = -1;
+	volatile boolean alreadyInGame = false;
         public void run() {
             try {
                 //get a socket from server.accept()
@@ -135,15 +137,32 @@ public class Server {
                     ObjectInputStream in = new ObjectInputStream(s.getInputStream());
                     this.output = out;
                     this.input = in;
-		    updateClients();
 		    playerID = numPlayers; //starts at 0, goes up to numPlayers-1
                     numPlayers++;
+  		    updateClients();
                     callback.accept("Found connection");
 
                     while(true) {
-                        Serializable data = (Serializable) in.readObject();
-                        this.ClientMove = (String) data;
-                        this.madeMove = true;
+			Serializable challenge = (Serializable) in.readObject(); //read someone challenging someone else, or accepting someone else's challenge
+			if(alreadyInGame == false) //user is challenging someone else
+			  {
+			  alreadyInGame = true;
+			  currentOpponent = (int)challenge; //set current opponent the the user that you challenged
+
+			  connectionList.get(currentOpponent).alreadyInGame = true;  //set opponent's current opponent to you
+			  connectionList.get(currentOpponent).currentOpponent = playerID; //after that, get ready to read the user's moves
+			  updateClients(); //update the clients GUIs to reflect who's in a game
+                          Serializable data = (Serializable) in.readObject();
+                          this.ClientMove = (String) data;
+                          this.madeMove = true;
+				//notify other user that they're in a game
+			  }
+			else //user is already in game, and is sending their move
+			  {
+			  Serializable data = (Serializable) in.readObject();
+                          this.ClientMove = (String) data;
+                          this.madeMove = true;
+			  }
 
 
                         calculateRound(playerID, currentOpponent); //if you are not versing anyone, currentOpponent is -1, go to calculateRound to see why
@@ -156,7 +175,7 @@ public class Server {
                 s = null;
 
                 //numPlayers = -1; //holder for if we were to lose a player, then we are going to end game
-		numPlayers--; //new to this version
+		numPlayers = -1; //new to this version
                 callback.accept("Not enough players to play.");
                 //BELOW NEEDS TO BE CHANGED
 		updateClients();
@@ -337,36 +356,17 @@ public class Server {
     //send the new scores out to the 2 clients
     private synchronized void updateClients() {
         try {
-	    //sends updates to both players
-	    /*connectionList.get(player1).output.writeObject(playerScores.get(player1));
-	    connectionList.get(player1).output.writeObject(playerScores.get(player2));
-	    connectionList.get(player1).output.writeObject(numPlayers);
-	    connectionList.get(player1).output.writeObject(playerMoves.get(player1));
-	    connectionList.get(player1).output.writeObject(playerMoves.get(player2));
-
-	    connectionList.get(player2).output.writeObject(playerScores.get(player1));
-            connectionList.get(player2).output.writeObject(playerScores.get(player2));
-            connectionList.get(player2).output.writeObject(numPlayers);
-            connectionList.get(player2).output.writeObject(playerMoves.get(player1));
-            connectionList.get(player2).output.writeObject(playerMoves.get(player2));
-*/
-	    //could also just send every update to everyon
-            for (Connection conn : connectionList) {
+            for (Connection conn : connectionList) { //update everyone
                 if (conn != null) {
                     if (conn.s != null) {
 			String playerInformation = "Not yet Implemented";
-			//new: update all scores, numPlayers, and moves
-			/*for(Integer score : playerScores)
+			conn.output.writeObject(numPlayers);		//send how many players are connected
+			for(int i = 0; i < numPlayers; i++)
 			  {
-		  	  conn.output.writeObject(score);
-			  }*/
-			conn.output.writeObject(numPlayers);
-			conn.output.writeObject(playerInformation);
-			/*
-			for(String move : playerMoves)
-			  {
-			  conn.output.writeObject(move);
-			  }*/
+			  conn.output.writeObject(connectionList.get(i).alreadyInGame); //send all users information regarding whether or not a user is in a game already
+			  }
+			 conn.output.writeObject(conn.playerID); //write the connection's playerID
+			 conn.output.writeObject(playerInformation); //send all user turns to clients
                     }
                 }
             }
