@@ -22,6 +22,7 @@ public class Client {
     int myPlayerID;
     String p1Move, p2Move, p3Move;
     String returnThisString;
+    ArrayList activePlayers = new ArrayList();
 
     //default constructor
     public Client(Consumer<Serializable> callback) {
@@ -98,22 +99,31 @@ public class Client {
                 output = new ObjectOutputStream(s.getOutputStream());
                 input = new ObjectInputStream(s.getInputStream());
                 s.setTcpNoDelay(true);
-		//Serializable numPlayersSer = input.readObject();
+
                 System.out.println("New connection client created.");
 
                 //take in input
                 while(connected) {
                     //will receive current number of players
+                    //will receive own player iD
                     //will receive a string full of all the information and will put into GUI
-                    //will change challenge buttons to text field that you can put in a number for to challenge that player
 
                     Serializable players = (Serializable) input.readObject();
                     numPlayers = (Integer) players;
+
+                    for (int i=0; i < numPlayers; i++) {
+                        Serializable areTheyPlaying = (Serializable) input.readObject();
+                        activePlayers.add(areTheyPlaying);
+                    }
+
+                    Serializable myID = (Serializable) input.readObject();
+                    myPlayerID = (Integer) myID;
 
                     Serializable playerInfo = (Serializable) input.readObject();
                     returnThisString = (String) playerInfo;
 
                     callback.accept("Changes made");
+                    activePlayers.clear();
                 }
 
 
