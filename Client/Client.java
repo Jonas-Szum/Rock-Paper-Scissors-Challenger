@@ -22,6 +22,7 @@ public class Client {
     int myPlayerID;
     String p1Move, p2Move, p3Move;
     String returnThisString;
+    ArrayList activePlayers = new ArrayList();
 
     //default constructor
     public Client(Consumer<Serializable> callback) {
@@ -110,6 +111,11 @@ public class Client {
                     Serializable players = (Serializable) input.readObject();
                     numPlayers = (Integer) players;
 
+                    for (int i=0; i < numPlayers; i++) {
+                        Serializable areTheyPlaying = (Serializable) input.readObject();
+                        activePlayers.add(areTheyPlaying);
+                    }
+
                     Serializable myID = (Serializable) input.readObject();
                     myPlayerID = (Integer) myID;
 
@@ -117,6 +123,7 @@ public class Client {
                     returnThisString = (String) playerInfo;
 
                     callback.accept("Changes made");
+                    activePlayers.clear();
                 }
 
 
