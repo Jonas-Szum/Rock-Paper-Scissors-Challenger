@@ -123,7 +123,7 @@ public class Client {
                     returnThisString = (String) playerInfo;
 
                     callback.accept("Changes made");
-                    activePlayers.clear();
+                    //activePlayers.clear(); //call activePlayer.clear() in callback
                 }
 
 
