@@ -28,7 +28,7 @@ import java.net.InetAddress;
 
 
 public class Main extends Application {
-
+    private Text playersA = new Text();
     private Stage welcomeStage, playStage, challengeStage;
     private Text welcomeText, portInputText, ipInputText;
     private Button systemsButton, playButton, closeButton;
@@ -120,7 +120,7 @@ public class Main extends Application {
         Scene challengeScene = new Scene(challengePane,400,600);
         challengePlayer.setMaxWidth(300);
 
-        VBox challenger = new VBox(myPlayerID, currentPlayers, challengePlayer, closeButton);
+        VBox challenger = new VBox(myPlayerID, currentPlayers,playersA, challengePlayer, closeButton);
         challenger.setSpacing(20);
         challenger.setAlignment(Pos.CENTER);
 
@@ -232,6 +232,17 @@ public class Main extends Application {
                 //return your ID so you cannot challenge yourself
                 myPlayerID.setText("You are player: " + thisClient.myPlayerID);
 
+                playersA.setText("");
+                String str= "Players Available to challenge: ";
+                for( int i = 0;i < thisClient.numPlayers;i++) {
+                		if((boolean)thisClient.activePlayers.get(i) == false) {
+                			str+= (Integer.toString(i)+", ");
+                	}	
+                }
+                playersA.setText(str);
+                thisClient.activePlayers.clear();
+                
+                
                 if (thisClient.numPlayers == -1) {
                     winner.setText("A player left. Please close client.");
                 }
