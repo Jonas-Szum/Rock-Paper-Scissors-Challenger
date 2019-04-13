@@ -28,10 +28,11 @@ import java.net.InetAddress;
 
 
 public class Main extends Application {
+	private int max = 3; // change max to allow more players
     private Text playersA = new Text();
     private Stage welcomeStage, playStage, challengeStage;
     private Text welcomeText, portInputText, ipInputText;
-    private Button systemsButton, playButton, closeButton;
+    private Button systemsButton, playButton, closeButton,accept,again;
     private Button Rock, Paper, Scissors, Lizard, Spock;
     private TextField portRequest, ipRequest;
     //    private Text selfScoreText, theirScoreText;
@@ -78,7 +79,11 @@ public class Main extends Application {
         systemsButton = new Button("Confirm settings");
         playButton = new Button("Let's play!");
         closeButton = new Button("End client");
-
+        accept = new Button("accept");
+        again = new Button("return");
+        accept.setVisible(false);
+        again.setVisible(false);
+        
         VBox Cproperties = new VBox(welcomeText, portRequest,ipRequest, systemsButton, playButton, portInputText, ipInputText, closeButton);
         Cproperties.setSpacing(10);
         Cproperties.setAlignment(Pos.CENTER);
@@ -106,7 +111,7 @@ public class Main extends Application {
 
 
 //        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, theirMove, selfScoreText,theirScoreText, winner, closeButton, playAgainButton);
-        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, gameState, winner, closeButton, playAgainButton);
+        VBox moves = new VBox(Rock,Paper,Scissors,Lizard,Spock, gameState, winner, closeButton,again, playAgainButton);
         moves.setSpacing(10);
         moves.setAlignment(Pos.CENTER);
 
@@ -120,13 +125,26 @@ public class Main extends Application {
         Scene challengeScene = new Scene(challengePane,400,600);
         challengePlayer.setMaxWidth(300);
 
-        VBox challenger = new VBox(myPlayerID, currentPlayers,playersA, challengePlayer, closeButton);
+        VBox challenger = new VBox(myPlayerID, currentPlayers, playersA,accept, challengePlayer, closeButton);
         challenger.setSpacing(20);
         challenger.setAlignment(Pos.CENTER);
 
         challengePane.setCenter(challenger);
 
         //sets the buttons for the client
+        accept.setOnAction( event->{
+        	accept.setVisible(false);
+            thisClient.sendInfo("accept");
+        	primaryStage.setScene(playScene);
+        });
+        again.setOnAction(event->{
+        	thisClient.returnThisString = "";
+        	gameState.setText("");
+            thisClient.sendInfo("return");
+        	again.setVisible(false);
+        	primaryStage.setScene(challengeScene);
+        });
+        
         systemsButton.setOnAction(event -> {
             try {
                 portNumber = Integer.parseInt(portRequest.getText());
@@ -177,7 +195,9 @@ public class Main extends Application {
         challengePlayer.setOnAction(e -> {
             try {
                 Integer i = Integer.parseInt(challengePlayer.getText());
+                thisClient.sendInfo("challenge");
                 thisClient.sendInfo(i);
+                primaryStage.setScene(playScene);
             }
             catch (Exception a){
                 a.printStackTrace();
@@ -222,30 +242,47 @@ public class Main extends Application {
     private Client createClient() {
         return new Client(data -> {
             Platform.runLater(() -> {
-
+            	
                 //returns the whole string of players' scores and their moves
                 gameState.setText(thisClient.returnThisString);
-
                 //return the number of players
                 currentPlayers.setText("Current # Players:" + thisClient.numPlayers);
 
                 //return your ID so you cannot challenge yourself
                 myPlayerID.setText("You are player: " + thisClient.myPlayerID);
-
+                
                 playersA.setText("");
                 String str= "Players Available to challenge: ";
-                for( int i = 0;i < thisClient.numPlayers;i++) {
+                for( int i = 0;i < max ;i++) {
+                		if( i >= thisClient.activePlayers.size())
+                			break;
                 		if((boolean)thisClient.activePlayers.get(i) == false) {
                 			str+= (Integer.toString(i)+", ");
                 	}	
                 }
+                
+                //receive a challenge
+                if(thisClient.challenge == true) 
+                {
+                	accept.setVisible(true);
+                	str+=("\n"+data);
+                	thisClient.challenge = false;
+                }
+                
+                //  game ends
+                if(thisClient.endGame == true) 
+                {
+                	again.setVisible(true);
+                	thisClient.endGame = false;
+                }
+                
                 playersA.setText(str);
                 thisClient.activePlayers.clear();
-                
                 
                 if (thisClient.numPlayers == -1) {
                     winner.setText("A player left. Please close client.");
                 }
+     
 
 //                if (selfScore == 3) {
 //                    winner.setText("Winner: Me!!");
