@@ -10,22 +10,26 @@ import java.util.ArrayList;
 
 
 public class Client {
-
+	private int max = 3; // change max to allow more players
     private int port;
     private InetAddress IP;
     Connection connection = new Connection();
     private boolean validSettings = false;
-    private Consumer<Serializable> callback;
+    private Consumer<String> callback;
     boolean connected = false;
+    
+    boolean challenge = false;
+    boolean endGame = false; 
+    
     int p1Score, p2Score, p3Score;
     int numPlayers;
     int myPlayerID;
     String p1Move, p2Move, p3Move;
-    String returnThisString;
+    String returnThisString ="";
     ArrayList activePlayers = new ArrayList();
 
     //default constructor
-    public Client(Consumer<Serializable> callback) {
+    public Client(Consumer<String> callback) {
         this.callback = callback;
     }
 
@@ -104,29 +108,44 @@ public class Client {
 
                 //take in input
                 while(connected) {
-                    //will receive current number of players
-                    //will receive own player iD
-                    //will receive a string full of all the information and will put into GUI
 
-                    Serializable players = (Serializable) input.readObject();
-                    numPlayers = (Integer) players;
+                	// match msg with the keywords: numPlayer,challenge,gameInformation to perform different code.
+                	String msg =  (String) input.readObject(); 
+                	
+                	// update numPlayer,and players who is available
+                    if( msg.compareTo("numPlayer") == 0)
+                    {
+                    	Serializable players = (Serializable) input.readObject();
+                    	numPlayers = (Integer) players;
 
-                    for (int i=0; i < numPlayers; i++) {
-                        Serializable areTheyPlaying = (Serializable) input.readObject();
-                        activePlayers.add(areTheyPlaying);
+                    	for (int i=0; i < max; i++) {
+                    		Serializable areTheyPlaying = (Serializable) input.readObject();
+                    		activePlayers.add(areTheyPlaying);
+                    	}
+
+                    	Serializable myID = (Serializable) input.readObject();
+                    	myPlayerID = (Integer) myID;
+                    	callback.accept("Changes made");
                     }
-
-                    Serializable myID = (Serializable) input.readObject();
-                    myPlayerID = (Integer) myID;
-
-                    Serializable playerInfo = (Serializable) input.readObject();
-                    returnThisString = (String) playerInfo;
-
-                    callback.accept("Changes made");
-                    activePlayers.clear();
+                    
+                    //receive a challenge
+                    else if(msg.compareTo("challenge") ==0)
+                    {
+                    	String msg2 = (String) input.readObject();
+                    	challenge = true;
+                    	callback.accept(msg2);
+                    }
+                    
+                    //a round ends, receive result from server
+                    else if(msg.compareTo("gameInformation") ==0)
+                    {   
+                        Serializable playerInfo = (Serializable) input.readObject();
+                        returnThisString = (String) playerInfo;
+                        endGame = true;
+                    	callback.accept(returnThisString);
+                    }
+                    //activePlayers.clear(); //call activePlayer.clear() in callback
                 }
-
-
             }
             catch (Exception e) {
                 if (s !=null) {
